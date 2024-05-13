@@ -1,0 +1,22 @@
+{
+    "inmuebles": [
+      {
+        "nombre": "Inmueble 1",
+        "descripcion": "Descripción del inmueble 1",
+        "direccion": "Dirección del inmueble 1",
+        "capacidad": "4 personas",
+        "reglas": "No fumar",
+        "precio": 120
+      },
+      {
+        "nombre": "Inmueble 2",
+        "descripcion": "Descripción del inmueble 2",
+        "direccion": "Dirección del inmueble 2",
+        "capacidad": "6 personas",
+        "reglas": "No mascotas",
+        "precio": 150
+      }
+      
+    ]
+  }
+  

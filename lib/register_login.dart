@@ -14,6 +14,8 @@ class AuthForm extends StatelessWidget {
   late TextEditingController emailController;
   late TextEditingController passwordController;
   late TextEditingController phoneController;
+  bool _isLoadingButton =
+      false; // Variable para controlar el estado del botón de inicio de sesión
 
   @override
   Widget build(BuildContext context) {

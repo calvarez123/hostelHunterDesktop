@@ -18,7 +18,8 @@ class _MainMenuState extends State<MainMenu> {
   bool _isLoading = true; // Estado para controlar si está cargando
   int pagActual = 1;
   bool _nextTrue = true;
-  bool _isLoading2 = true; // Estado para controlar si está cargando
+  bool _isLoading2 = true;
+  bool _isLoadingButton = false;
 
   @override
   void initState() {
@@ -64,6 +65,11 @@ class _MainMenuState extends State<MainMenu> {
     int nextpage = pagina + 1;
     String paginaStringnext = nextpage.toString();
 
+    setState(() {
+      _isLoading2 = true; // Indicar que se está cargando
+      _isLoadingButton = true;
+    });
+
     try {
       // `await` aquí asegura que el Future se complete y obtengamos el String resultante
       final String response = await appData.pedir_info(paginaString);
@@ -78,13 +84,15 @@ class _MainMenuState extends State<MainMenu> {
       setState(() {
         _inmuebles = data[
             "data"]; // Asegúrate de que la clave es correcta basada en la estructura de tu JSON
-        _isLoading = false; // Carga completada
+        _isLoading2 = false; // Carga completada
+        _isLoadingButton = false;
       });
     } catch (e) {
       print('Error loading data: $e');
       setState(() {
-        _isLoading =
+        _isLoading2 =
             false; // Asegurar que el indicador de carga se oculte en caso de error
+        _isLoadingButton = false;
       });
     }
   }
@@ -141,8 +149,9 @@ class _MainMenuState extends State<MainMenu> {
                       setState(() {
                         pagActual = pagActual - 1;
                         _nextTrue = true;
+                        _isLoadingButton = true;
                       });
-
+                      // Activa el indicador de carga
                       // Lógica para ir a la página anterior
                       _loadInmuebles(pagActual);
                     },
@@ -159,6 +168,7 @@ class _MainMenuState extends State<MainMenu> {
                     onPressed: () {
                       setState(() {
                         pagActual = pagActual + 1;
+                        _isLoadingButton = true;
                       });
 
                       // Lógica para ir a la página siguiente
@@ -166,8 +176,9 @@ class _MainMenuState extends State<MainMenu> {
                     },
                     child: Text('Siguiente'),
                   )
-                : SizedBox
-                    .shrink(), // Usar SizedBox.shrink() para no ocupar espacio si no se muestra el botón
+                : SizedBox.shrink(),
+
+            // Usar SizedBox.shrink() para no ocupar espacio si no se muestra el botón
           ],
         ),
         SizedBox(height: 10),
@@ -182,10 +193,13 @@ class _MainMenuState extends State<MainMenu> {
           },
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 20.0),
-            child: Text(
-              'AÑADIR',
-              style: TextStyle(fontSize: 18.0),
-            ),
+            child:
+                _isLoadingButton // Si está en proceso de carga, muestra el indicador de carga
+                    ? CircularProgressIndicator()
+                    : Text(
+                        'AÑADIR',
+                        style: TextStyle(fontSize: 18.0),
+                      ),
           ),
         ),
       ],
@@ -310,6 +324,28 @@ class _MainMenuState extends State<MainMenu> {
                         ),
                       ),
                     ),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () =>
+                            _showDeleteConfirmationDialog(context, inmueble),
+                        icon: Icon(
+                          Icons.delete,
+                          color: Colors
+                              .black, // Cambiar el color del icono a negro
+                        ),
+                        label: Text(
+                          'Eliminar',
+                          style: TextStyle(
+                              color: Colors
+                                  .black), // Cambiar el color del texto a negro
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          padding: EdgeInsets.symmetric(vertical: 15),
+                          backgroundColor:
+                              Colors.red, // Cambiar el color de fondo a rojo
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ],
@@ -324,6 +360,44 @@ class _MainMenuState extends State<MainMenu> {
     return date1.year == date2.year &&
         date1.month == date2.month &&
         date1.day == date2.day;
+  }
+
+  void _showDeleteConfirmationDialog(
+      BuildContext context, Map<String, dynamic> inmueble) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text("¿Estás seguro de que quieres eliminar este inmueble?"),
+          actions: <Widget>[
+            TextButton(
+              child: Text("Sí"),
+              onPressed: () async {
+                // Aquí puedes agregar la lógica para eliminar el inmueble
+                // Envía el ID del inmueble al servidor
+                final appData = Provider.of<AppData>(context, listen: false);
+                String idInmueble = inmueble['alojamientoID'].toString();
+                String resultado = await appData.eliminarID(idInmueble);
+
+                // Si la solicitud se envió con éxito, cargar los inmuebles de nuevo
+                pagActual = 1;
+                _loadInmuebles(1);
+
+                Navigator.of(context)
+                    .pop(); // Cierra el diálogo de confirmación
+              },
+            ),
+            TextButton(
+              child: Text("No"),
+              onPressed: () {
+                Navigator.of(context)
+                    .pop(); // Cierra el diálogo de confirmación
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   List<DateTime> getDaysInBetween(DateTime startDate, DateTime endDate) {

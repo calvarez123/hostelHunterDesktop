@@ -154,7 +154,7 @@ class AppData extends ChangeNotifier {
       // Creamos el cuerpo de la solicitud con el email
       var body = {
         'page': pagina,
-        'size': '2', // Aquí asumimos que aún necesitas enviar 'size'
+        'size': '3', // Aquí asumimos que aún necesitas enviar 'size'
         'email': 'cristian@example.com',
       };
       String bodyEncoded = jsonEncode(body);
@@ -179,6 +179,36 @@ class AppData extends ChangeNotifier {
         return 'no';
       }
     } catch (e) {
+      print('Error en la solicitud: $e');
+      return 'Error en la solicitud: $e';
+    }
+  }
+
+  Future<String> eliminarID(String id) async {
+    try {
+      // Definir el cuerpo de la solicitud con el ID
+      Map<String, dynamic> body = {"id": id};
+      String bodyEncoded = jsonEncode(body);
+
+      // Realizar la solicitud POST al servidor
+      final response = await http.post(
+        Uri.parse('https://hostelhunter.ieti.site/api/eliminar/alojamiento'),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: bodyEncoded,
+      );
+
+      if (response.statusCode == 200) {
+        // Si la solicitud es exitosa, retornar la respuesta del servidor
+        return response.body;
+      } else {
+        // Si hay un error en la solicitud, imprimir el estado de la respuesta y retornar un mensaje de error
+        print('Error en la solicitud: ${response.statusCode}');
+        return 'Error: No se pudo enviar el ID al servidor';
+      }
+    } catch (e) {
+      // Si ocurre una excepción, imprimir el error y retornar un mensaje de error
       print('Error en la solicitud: $e');
       return 'Error en la solicitud: $e';
     }

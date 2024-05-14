@@ -1,4 +1,5 @@
 # HostelHunter Desktop App
+![Imagen de ejemplo](assets/imagenes/logo.png)
 
 ## Acerca de
 
@@ -27,4 +28,4 @@ Para cualquier pregunta o asistencia adicional, por favor contáctanos a través
 
 ¡Gracias por utilizar la aplicación de escritorio de HostelHunter!
 
-![Imagen de ejemplo](assets/imagenes/logo.png)
+

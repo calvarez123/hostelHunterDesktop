@@ -127,8 +127,7 @@ class AuthForm extends StatelessWidget {
                       passwordController.clear();
                       phoneController.clear();
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                            content: Text('Correo o contraseña incorrecto')),
+                        SnackBar(content: Text('Conectando al servidor...')),
                       );
                       Navigator.pushReplacement(
                         context,
@@ -161,7 +160,7 @@ class AuthForm extends StatelessWidget {
                       passwordController.clear();
                       phoneController.clear();
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Error al registrar usuario')),
+                        SnackBar(content: Text('Conectando al servidor...')),
                       );
                     }
                   });

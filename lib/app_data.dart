@@ -15,6 +15,7 @@ class AppData extends ChangeNotifier {
 
   String username = '';
   String password = '';
+  String correo = '';
   bool waitingResponse = false;
   bool responseArrived = false;
   bool showPopup = false;
@@ -66,7 +67,6 @@ class AppData extends ChangeNotifier {
 
       if (response.statusCode == 200) {
         print('Usuario registrado correctamente');
-        print(response.body);
         return 'entras';
       } else {
         // Manejo de errores basado en el estado de la respuesta
@@ -126,9 +126,9 @@ class AppData extends ChangeNotifier {
 
       if (response.statusCode == 200) {
         print('Usuario inició sesión correctamente');
-        print(response.body);
         final data2 = json.decode(response.body);
         idUsuario = data2["data"]["id"];
+        correo = email;
 
         return 'entras';
       } else {
@@ -140,6 +140,31 @@ class AppData extends ChangeNotifier {
     } catch (e) {
       print('Error en la solicitud: $e');
       return 'Error en la solicitud: $e';
+    }
+  }
+
+  Future<Map<String, dynamic>> calendario(String alojamientoId) async {
+    try {
+      Map<String, dynamic> body = {"alojamientoID": alojamientoId};
+      String bodyEncoded = jsonEncode(body);
+
+      final response = await http.post(
+        Uri.parse('https://hostelhunter.ieti.site/api/reservas/info'),
+        headers: {"Content-Type": "application/json"},
+        body: bodyEncoded,
+      );
+
+      if (response.statusCode == 200) {
+        print(response.body);
+        return jsonDecode(response.body);
+      } else {
+        print('Error al obtener intervalos ocupados: ${response.statusCode}');
+        print(response.body);
+        return {'error': 'Error al obtener intervalos ocupados'};
+      }
+    } catch (e) {
+      print('Error en la solicitud: $e');
+      return {'error': 'Error en la solicitud: $e'};
     }
   }
 
@@ -155,7 +180,7 @@ class AppData extends ChangeNotifier {
       var body = {
         'page': pagina,
         'size': '3', // Aquí asumimos que aún necesitas enviar 'size'
-        'email': 'cristian@example.com',
+        'email': correo,
       };
       String bodyEncoded = jsonEncode(body);
 
@@ -292,7 +317,7 @@ class AppData extends ChangeNotifier {
     required String descripcion,
     required String nombre,
     required String reglas,
-    required String urlFoto,
+    required List<String> urlFoto,
     required String direccion,
   }) async {
     try {
@@ -322,7 +347,6 @@ class AppData extends ChangeNotifier {
             .body; // Puedes decidir retornar el mensaje completo o parsear el JSON para extraer información específica
       } else {
         print("Error al crear alojamiento: ${response.statusCode}");
-        print(bodyEncoded);
         return 'Error: No se pudo crear el alojamiento';
       }
     } catch (e) {
@@ -331,16 +355,15 @@ class AppData extends ChangeNotifier {
     }
   }
 
-  Future<String> modificarAlojamiento({
-    required String capacidad,
-    required String precioPorNoche,
-    required String descripcion,
-    required String nombre,
-    required String reglas,
-    required String urlFoto,
-    required String direccion,
-    required String idalojamiento,
-  }) async {
+  Future<String> modificarAlojamiento(
+      {required String capacidad,
+      required String precioPorNoche,
+      required String descripcion,
+      required String nombre,
+      required String reglas,
+      required List<String> urlFoto,
+      required String direccion,
+      required String idalojamiento}) async {
     try {
       final url = Uri.parse(
           'https://hostelhunter.ieti.site/api/editar/alojamiento'); // Asegúrate de que la URL es correcta

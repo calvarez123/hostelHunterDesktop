@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'package:descktop/app_data.dart';
+import 'package:descktop/galeria.dart';
 import 'package:descktop/newInmueble.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:descktop/editar_boton.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
 
@@ -33,20 +35,15 @@ class _MainMenuState extends State<MainMenu> {
     String jsonIntervalos = '''
     {
       "occupiedIntervals": [
-        {
-          "start": "2024-05-01",
-          "end": "2024-05-05"
-        },
-        {
-          "start": "2024-05-10",
-          "end": "2024-05-12"
-        }
+       
+        
       ]
     }
     ''';
 
     var data = json.decode(jsonIntervalos);
     List<dynamic> intervals = data['occupiedIntervals'];
+
     for (var interval in intervals) {
       DateTime start = DateTime.parse(interval['start']).toUtc();
       DateTime end = DateTime.parse(interval['end']).toUtc();
@@ -56,6 +53,36 @@ class _MainMenuState extends State<MainMenu> {
     // Asegurarse de que los cambios se reflejan en el UI
     setState(() {
       _isLoading = false;
+    });
+  }
+
+  Future _loadOccupiedDatesFromServer(String alojamientoId) async {
+    setState(() {
+      _isLoading = true; // Mostrar indicador de carga
+    });
+
+    final appData = Provider.of<AppData>(context, listen: false);
+    final response = await appData.calendario(alojamientoId);
+
+    if (response.containsKey('occupiedIntervals')) {
+      List<dynamic> intervals = response['occupiedIntervals'];
+      occupiedDates.clear();
+      DateFormat dateFormat = DateFormat('dd/MM/yyyy');
+
+      for (var interval in intervals) {
+        DateTime start =
+            dateFormat.parse(interval['start']); // No usar .toUtc()
+        DateTime end = dateFormat.parse(interval['end']); // No usar .toUtc()
+        List<DateTime> days = getDaysInBetween(start, end);
+        occupiedDates.addAll(days);
+      }
+    } else {
+      print('Error al obtener fechas ocupadas: ${response['error']}');
+      occupiedDates.clear();
+    }
+
+    setState(() {
+      _isLoading = false; // Ocultar indicador de carga
     });
   }
 
@@ -207,6 +234,7 @@ class _MainMenuState extends State<MainMenu> {
   }
 
   Widget _buildInmuebleItem(Map<String, dynamic> inmueble, int index) {
+    final appData = Provider.of<AppData>(context, listen: false);
     return Container(
       padding: EdgeInsets.all(10),
       margin: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
@@ -222,7 +250,7 @@ class _MainMenuState extends State<MainMenu> {
             height: 200,
             alignment: Alignment.center,
             child: Image.network(
-              inmueble['urlFoto'] ?? 'https://via.placeholder.com/200',
+              inmueble['urlFoto'][0] ?? 'https://via.placeholder.com/200',
               fit: BoxFit.cover,
               loadingBuilder: (context, child, loadingProgress) {
                 if (loadingProgress == null) return child;
@@ -291,6 +319,26 @@ class _MainMenuState extends State<MainMenu> {
                     color: Colors.black87,
                   ),
                 ),
+                RichText(
+                  text: TextSpan(
+                    children: [
+                      TextSpan(
+                        text: 'Likes: ${inmueble['likes']} ',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      WidgetSpan(
+                        child: Icon(
+                          Icons.favorite,
+                          color: Colors.red,
+                          size: 16,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 SizedBox(height: 10),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -316,7 +364,12 @@ class _MainMenuState extends State<MainMenu> {
                     SizedBox(width: 10),
                     Expanded(
                       child: ElevatedButton.icon(
-                        onPressed: () => _showCalendarDialog(context, inmueble),
+                        onPressed: () async {
+                          String alojamientoId =
+                              inmueble['alojamientoID'].toString();
+                          await _loadOccupiedDatesFromServer(alojamientoId);
+                          _showCalendarDialog(context, inmueble);
+                        },
                         icon: Icon(Icons.calendar_today),
                         label: Text('Calendario'),
                         style: ElevatedButton.styleFrom(
@@ -324,25 +377,47 @@ class _MainMenuState extends State<MainMenu> {
                         ),
                       ),
                     ),
+                    SizedBox(width: 10),
                     Expanded(
                       child: ElevatedButton.icon(
                         onPressed: () =>
                             _showDeleteConfirmationDialog(context, inmueble),
                         icon: Icon(
                           Icons.delete,
-                          color: Colors
-                              .black, // Cambiar el color del icono a negro
+                          color: Colors.black,
                         ),
                         label: Text(
                           'Eliminar',
-                          style: TextStyle(
-                              color: Colors
-                                  .black), // Cambiar el color del texto a negro
+                          style: TextStyle(color: Colors.black),
                         ),
                         style: ElevatedButton.styleFrom(
                           padding: EdgeInsets.symmetric(vertical: 15),
-                          backgroundColor:
-                              Colors.red, // Cambiar el color de fondo a rojo
+                          backgroundColor: Colors.red,
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          // Convertir la lista dinámica en una lista de cadenas
+                          List<dynamic> urlsDinamicas = inmueble['urlFoto'];
+                          List<String> imageUrls = urlsDinamicas
+                              .map((url) => url.toString())
+                              .toList();
+                          // Lanzar la pantalla de la galería de imágenes
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  ImageGallery(imageUrls: imageUrls),
+                            ),
+                          );
+                        },
+                        icon: Icon(Icons.image),
+                        label: Text('Ver Imágenes'),
+                        style: ElevatedButton.styleFrom(
+                          padding: EdgeInsets.symmetric(vertical: 15),
                         ),
                       ),
                     ),
@@ -373,18 +448,20 @@ class _MainMenuState extends State<MainMenu> {
             TextButton(
               child: Text("Sí"),
               onPressed: () async {
-                // Aquí puedes agregar la lógica para eliminar el inmueble
-                // Envía el ID del inmueble al servidor
                 final appData = Provider.of<AppData>(context, listen: false);
                 String idInmueble = inmueble['alojamientoID'].toString();
                 String resultado = await appData.eliminarID(idInmueble);
 
                 // Si la solicitud se envió con éxito, cargar los inmuebles de nuevo
                 pagActual = 1;
-                _loadInmuebles(1);
-
                 Navigator.of(context)
                     .pop(); // Cierra el diálogo de confirmación
+
+                // Navega nuevamente a la misma página
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => MainMenu()),
+                );
               },
             ),
             TextButton(
@@ -405,7 +482,7 @@ class _MainMenuState extends State<MainMenu> {
     for (DateTime d = startDate;
         d.isBefore(endDate.add(Duration(days: 1)));
         d = d.add(Duration(days: 1))) {
-      days.add(DateTime.utc(d.year, d.month, d.day)); // Normalize date
+      days.add(DateTime(d.year, d.month, d.day)); // No usar DateTime.utc
     }
     return days;
   }
@@ -429,7 +506,7 @@ class _MainMenuState extends State<MainMenu> {
               calendarBuilders: CalendarBuilders(
                 defaultBuilder: (context, day, focusedDay) {
                   if (occupiedDates
-                      .contains(DateTime.utc(day.year, day.month, day.day))) {
+                      .contains(DateTime(day.year, day.month, day.day))) {
                     return Container(
                       margin: const EdgeInsets.all(4.0),
                       alignment: Alignment.center,

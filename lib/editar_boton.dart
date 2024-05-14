@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:descktop/app_data.dart';
@@ -25,10 +26,9 @@ class _EditarBotonState extends State<EditarBoton> {
     'PrecioPorNoche': 50,
   };
 
-  late Map<String, dynamic> inmuebleModificado =
-      {}; // Variable para almacenar los datos modificados
+  late Map<String, dynamic> inmuebleModificado = {};
 
-  late String imageUrl = '';
+  List<String> _imageUrls = [];
 
   @override
   void initState() {
@@ -41,12 +41,33 @@ class _EditarBotonState extends State<EditarBoton> {
     String numeroID = widget.id.toString();
     final String response2 = await appData.editar1(numeroID);
     final data2 = json.decode(response2);
-    print(data2);
 
     setState(() {
       inmueble = data2["data"];
-      imageUrl = inmueble['urlFoto'];
+      _imageUrls = List<String>.from(
+          inmueble['urlFoto']); // Modificado para manejar múltiples imágenes
     });
+  }
+
+  Future<void> _pickImage() async {
+    final appData = Provider.of<AppData>(context, listen: false);
+
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.image,
+        allowMultiple: true); // Permitir la selección de múltiples archivos
+
+    if (result != null) {
+      for (var file in result.files) {
+        if (file.path != null) {
+          File fileObj = File(file.path!);
+          String imageUrl = await appData.subirArchivoADrive(fileObj);
+          setState(() {
+            _imageUrls.add(
+                imageUrl); // Agregar la URL de la imagen seleccionada a la lista
+          });
+        }
+      }
+    }
   }
 
   void modificarValor(String clave) async {
@@ -70,10 +91,8 @@ class _EditarBotonState extends State<EditarBoton> {
             ElevatedButton(
               onPressed: () {
                 setState(() {
-                  inmuebleModificado[clave] =
-                      nuevoValorController.text; // Guarda el valor modificado
-                  inmueble[clave] = nuevoValorController
-                      .text; // Actualiza el valor en el inmueble original
+                  inmuebleModificado[clave] = nuevoValorController.text;
+                  inmueble[clave] = nuevoValorController.text;
                 });
                 Navigator.of(context).pop();
               },
@@ -96,9 +115,15 @@ class _EditarBotonState extends State<EditarBoton> {
       descripcion: inmueble['descripcion'],
       nombre: inmueble['nombre'],
       reglas: inmueble['reglas'],
-      urlFoto: inmueble['urlFoto'],
+      urlFoto: _imageUrls,
       direccion: inmueble['direccion'],
     );
+  }
+
+  void _removeImage(int index) {
+    setState(() {
+      _imageUrls.removeAt(index);
+    });
   }
 
   @override
@@ -136,12 +161,39 @@ class _EditarBotonState extends State<EditarBoton> {
       children: [
         SizedBox(
           height: 200,
-          child: imageUrl.isEmpty
-              ? Center(child: CircularProgressIndicator())
-              : Image.network(
-                  imageUrl,
-                  fit: BoxFit.cover,
-                ),
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: _imageUrls.length,
+            itemBuilder: (BuildContext context, int index) {
+              return Stack(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Image.network(
+                      _imageUrls[index],
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  Positioned(
+                    top: 0,
+                    right: 0,
+                    child: Container(
+                      color: Colors.black.withOpacity(0.5),
+                      child: IconButton(
+                        icon: Icon(Icons.close, color: Colors.white),
+                        onPressed: () => _removeImage(index),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
+        SizedBox(height: 20),
+        ElevatedButton(
+          onPressed: _pickImage,
+          child: Text('Seleccionar Imágenes'),
         ),
         SizedBox(height: 20),
         Expanded(
@@ -192,8 +244,7 @@ class _EditarBotonState extends State<EditarBoton> {
             width: 150,
             height: 50,
             child: ElevatedButton(
-              onPressed:
-                  guardarCambios, // Llama a la función para guardar los cambios
+              onPressed: guardarCambios,
               child: Text('Guardar'),
             ),
           ),

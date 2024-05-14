@@ -1,4 +1,6 @@
+import 'package:descktop/login.dart';
 import 'package:descktop/register_login.dart';
+import 'package:descktop/registrar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -22,8 +24,7 @@ class LoginPage extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                      builder: (context) => AuthForm(formType: FormType.login)),
+                  MaterialPageRoute(builder: (context) => LoginForm()),
                 );
               },
               style: ElevatedButton.styleFrom(
@@ -47,9 +48,7 @@ class LoginPage extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                      builder: (context) =>
-                          AuthForm(formType: FormType.register)),
+                  MaterialPageRoute(builder: (context) => RegisterForm()),
                 );
               },
               style: ElevatedButton.styleFrom(

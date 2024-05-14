@@ -143,6 +143,33 @@ class AppData extends ChangeNotifier {
     }
   }
 
+  Future<String> enviarCorreoRecuperacion(String email) async {
+    try {
+      Map<String, dynamic> body = {
+        'email': email,
+      };
+      String bodyEncoded = jsonEncode(body);
+
+      final response = await http.post(
+        Uri.parse('https://hostelhunter.ieti.site/api/verificar/usuario'),
+        headers: {"Content-Type": "application/json"},
+        body: bodyEncoded,
+      );
+
+      if (response.statusCode == 200) {
+        print('Correo de recuperación enviado correctamente');
+        return 'Correo de recuperación enviado';
+      } else {
+        print('Error al enviar correo de recuperación: ${response.statusCode}');
+        print(response.body);
+        return 'Error al enviar correo de recuperación';
+      }
+    } catch (e) {
+      print('Error en la solicitud: $e');
+      return 'Error en la solicitud: $e';
+    }
+  }
+
   Future<Map<String, dynamic>> calendario(String alojamientoId) async {
     try {
       Map<String, dynamic> body = {"alojamientoID": alojamientoId};
@@ -307,6 +334,39 @@ class AppData extends ChangeNotifier {
       return urlExportacion;
     } finally {
       client.close();
+    }
+  }
+
+  Future<String> verificarpassword(String email, String contrasena) async {
+    try {
+      Map<String, dynamic> body = {
+        "email": email,
+        "contrasena": contrasena,
+      };
+      String bodyEncoded = jsonEncode(body);
+
+      final response = await http.post(
+        Uri.parse(
+            'https://hostelhunter.ieti.site/api/verificar/contrasena'), // Reemplaza 'URL_DEL_SERVIDOR_AQUI' con la URL de tu servidor
+        headers: {
+          "Content-Type": "application/json",
+        }, // Asegúrate de enviar el header correcto
+        body: bodyEncoded,
+      );
+
+      if (response.statusCode == 200) {
+        // Si la solicitud es exitosa, retorna el mensaje de éxito
+        return 'Credenciales enviadas correctamente';
+      } else {
+        // Si hay un error en la solicitud, imprime el estado de la respuesta y retorna un mensaje de error
+        print('Error al enviar credenciales: ${response.statusCode}');
+        print(response.body);
+        return 'Error al enviar credenciales';
+      }
+    } catch (e) {
+      // Si ocurre una excepción, imprime el error y retorna un mensaje de error
+      print('Error en la solicitud: $e');
+      return 'Error en la solicitud: $e';
     }
   }
 

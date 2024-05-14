@@ -1,1 +1,0 @@
- /home/super/repositorios/repoHOSTELHUNTER/hostelHunterDesktop/.dart_tool/flutter_build/f7db3825139108dcb65782703351c8e4/native_assets.yaml: 

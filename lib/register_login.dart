@@ -1,3 +1,4 @@
+import 'package:descktop/contrasenaPerdida.dart';
 import 'package:descktop/mainmenu.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -177,65 +178,6 @@ class AuthForm extends StatelessWidget {
               child: Text(
                 formType == FormType.login ? 'Iniciar Sesión' : 'Registrarse',
                 style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class ForgotPasswordForm extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final appData = Provider.of<AppData>(context, listen: false);
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Recuperar Contraseña'),
-        centerTitle: true,
-      ),
-      body: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Image.asset(
-              'assets/imagenes/logo.png',
-              height: 200,
-              width: 200,
-              fit: BoxFit.scaleDown,
-            ),
-            TextFormField(
-              decoration: InputDecoration(
-                labelText: 'Correo Electrónico',
-              ),
-            ),
-            SizedBox(height: 16.0),
-            TextFormField(
-              decoration: InputDecoration(
-                labelText: 'Teléfono',
-              ),
-            ),
-            SizedBox(height: 20.0),
-            ElevatedButton(
-              onPressed: () {
-                // Lógica para recuperar la contraseña
-              },
-              style: ElevatedButton.styleFrom(
-                padding: EdgeInsets.symmetric(vertical: 15),
-                backgroundColor: Colors.blue,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
-                ),
-              ),
-              child: Text(
-                'Recuperar Contraseña',
-                style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),

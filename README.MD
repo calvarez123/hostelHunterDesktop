@@ -27,4 +27,4 @@ Para cualquier pregunta o asistencia adicional, por favor contáctanos a través
 
 ¡Gracias por utilizar la aplicación de escritorio de HostelHunter!
 
-![Imagen de ejemplo](url_de_la_imagen)
+![Imagen de ejemplo](assets/imagenes/logo.png)

@@ -234,6 +234,9 @@ class _EditarBotonState extends State<EditarBoton> {
             height: 50,
             child: ElevatedButton(
               onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Datos No actualizados')),
+                );
                 // Acción para el botón "Descartar"
               },
               child: Text('Descartar'),
@@ -244,7 +247,13 @@ class _EditarBotonState extends State<EditarBoton> {
             width: 150,
             height: 50,
             child: ElevatedButton(
-              onPressed: guardarCambios,
+              onPressed: () {
+                guardarCambios();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Datos Actualizados con Exito')),
+                );
+                // Acción para el botón "Descartar"
+              },
               child: Text('Guardar'),
             ),
           ),

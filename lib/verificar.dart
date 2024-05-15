@@ -1,3 +1,4 @@
+import 'package:descktop/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:descktop/app_data.dart';
@@ -71,8 +72,18 @@ class VerifyPasswordScreen extends StatelessWidget {
                 if (password1 == password2) {
                   print('La contraseña es: $password1');
                   appData.verificarpassword(email, password1);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Contraseña Cambiada con exito')),
+                  );
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => LoginPage()),
+                  );
                 } else {
                   print('Las contraseñas no coinciden');
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Las Contraseñas no coinciden')),
+                  );
                 }
               },
               style: ElevatedButton.styleFrom(
